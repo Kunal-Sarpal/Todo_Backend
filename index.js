@@ -1,18 +1,51 @@
 const express = require('express');
 const {createTodo,updateTodo} = require('./types');
-const {todo} = require('./db/db');
+const {todo,user} = require('./db/db');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const jwtSecret = "1234567";
 
 app.use(cors());
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(bodyParser.json());
+
 app.get('/', (req, res) => {
 
     res.send("Hey Hello")
 })
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        let userExists = await user.findOne({ email });
+
+        if (userExists) {
+            // User already exists, log them in
+            const token = jwt.sign({ email }, jwtSecret, { expiresIn: '6h' });
+            res.cookie('auth', token, { httpOnly: true });
+            res.send("User logged in successfully");
+        } else {
+            // User does not exist, create a new user and log them in
+            await user.create({ email, password });
+            const token = jwt.sign({ email }, jwtSecret, { expiresIn: '6h' });
+            res.cookie('auth', token, { httpOnly: true });
+            res.send("New user created and logged in successfully");
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).send("Error processing login");
+    }
+});
+app.get("/logout", (req, res) => {
+    res.clearCookie("auth");
+    res.send("Logged out successfully");
+});
 app.post("/todos",async (req,res)=>{
     try{
 

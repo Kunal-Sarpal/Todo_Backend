@@ -9,7 +9,7 @@ const todoSchema = new mongoose.Schema({
         type:Boolean,
         default:false
     },
-    ref:{
+    session:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'userSchema'
 
@@ -17,9 +17,8 @@ const todoSchema = new mongoose.Schema({
 })
 
 const userSchema = new mongoose.Schema({
-    username:{
+    email:{
         type:String,
-        required:true,
 
     },
     password:String
@@ -30,6 +29,6 @@ const todo = mongoose.model("todos",todoSchema);
 const user = mongoose.model("user",userSchema); 
 
 module.exports = {
-    todo
+    todo,
     user
 }
